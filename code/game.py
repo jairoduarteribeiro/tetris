@@ -2,16 +2,8 @@ import time
 
 import pygame
 
-from code.block import (
-    BlockFactory,
-    BlockI,
-    BlockJ,
-    BlockL,
-    BlockO,
-    BlockS,
-    BlockT,
-    BlockZ,
-)
+from code.block import BlockFactory
+from code.board import Board
 from code.constants import COLOR_BLACK, COLOR_YELLOW, COLOR_WHITE
 from code.gamestate import GameState
 
@@ -80,14 +72,72 @@ class Game:
 
         self.block_queue = [BlockFactory.create_random_block() for _ in range(5)]
         self.active_block = self.block_queue.pop(0)
-        self.active_block.set_position(4, 9)
+        self.active_block.set_position(4, 0)
+
+        self.board = Board()
+
+        self.drop_time = time.time()
+        self.drop_interval = 1
 
         running = True
         while running:
+            current_time = time.time()
+            if current_time - self.drop_time > self.drop_interval:
+                self.active_block.move_down()
+                if not self.active_block.is_within_bounds() or self.board.collides(
+                    self.active_block
+                ):
+                    self.active_block.move_up()
+                    self.board.fix_block(self.active_block)
+
+                    self.active_block = self.block_queue.pop(0)
+                    self.active_block.set_position(4, 0)
+                    self.block_queue.append(BlockFactory.create_random_block())
+
+                    if self.board.collides(self.active_block):
+                        print("GAME OVER")
+                        self.app.change_state(GameState.MENU)
+                        break
+
+                self.drop_time = current_time
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.app.change_state(GameState.MENU)
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        self.active_block.rotate()
+                        if (
+                            not self.active_block.is_within_bounds()
+                            or self.board.collides(self.active_block)
+                        ):
+                            self.active_block.rotate_back()
+                    elif event.key == pygame.K_LEFT:
+                        self.active_block.move_left()
+                        if (
+                            not self.active_block.is_within_bounds()
+                            or self.board.collides(self.active_block)
+                        ):
+                            self.active_block.move_right()
+                    elif event.key == pygame.K_RIGHT:
+                        self.active_block.move_right()
+                        if (
+                            not self.active_block.is_within_bounds()
+                            or self.board.collides(self.active_block)
+                        ):
+                            self.active_block.move_left()
+                    elif event.key == pygame.K_DOWN:
+                        self.active_block.move_down()
+                        if (
+                            not self.active_block.is_within_bounds()
+                            or self.board.collides(self.active_block)
+                        ):
+                            self.active_block.move_up()
+
             self.app.screen.fill(COLOR_BLACK)
-
             self.app.screen.blit(main_board_img, main_board_pos)
-
+            self.board.render(self.app.screen, play_area_origin, BLOCK_SIZE, MAIN_SCALE)
             self.app.screen.blit(title_img, title_pos)
 
             next_blocks_text = self.font.render("Next Blocks", True, COLOR_WHITE)
@@ -98,7 +148,6 @@ class Game:
                 )
             )
             self.app.screen.blit(next_blocks_text, next_blocks_rect)
-
             self.app.screen.blit(mini_board_img, mini_board_pos)
 
             time_text = self.font.render(self.format_elapsed_time(), True, COLOR_YELLOW)
@@ -108,13 +157,11 @@ class Game:
                     mini_board_pos[1] + mini_height + SPACING,
                 )
             )
-
             self.app.screen.blit(time_text, time_rect)
 
             for x, y in self.active_block.get_cells():
                 pixel_x = play_area_origin[0] + x * BLOCK_SIZE * MAIN_SCALE
                 pixel_y = play_area_origin[1] + y * BLOCK_SIZE * MAIN_SCALE
-
                 img = self.active_block.get_image()
                 scaled = pygame.transform.scale(
                     img,
@@ -126,14 +173,11 @@ class Game:
                 self.app.screen.blit(scaled, (pixel_x, pixel_y))
 
             preview_positions = [(4, 2), (4, 7), (4, 12), (4, 17)]
-
             for i, block in enumerate(self.block_queue):
                 block.set_position(*preview_positions[i])
-
                 for x, y in block.get_cells():
                     pixel_x = preview_area_origin[0] + x * BLOCK_SIZE * MINI_SCALE
                     pixel_y = preview_area_origin[1] + y * BLOCK_SIZE * MINI_SCALE
-
                     img = block.get_image()
                     scaled = pygame.transform.scale(
                         img,
@@ -146,25 +190,3 @@ class Game:
 
             pygame.display.flip()
             self.app.clock.tick(60)
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.app.change_state(GameState.MENU)
-                    running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        self.active_block.rotate()
-                        if not self.active_block.is_within_bounds():
-                            self.active_block.rotate_back()
-                    elif event.key == pygame.K_LEFT:
-                        self.active_block.move_left()
-                        if not self.active_block.is_within_bounds():
-                            self.active_block.move_right()
-                    elif event.key == pygame.K_RIGHT:
-                        self.active_block.move_right()
-                        if not self.active_block.is_within_bounds():
-                            self.active_block.move_left()
-                    elif event.key == pygame.K_DOWN:
-                        self.active_block.move_down()
-                        if not self.active_block.is_within_bounds():
-                            self.active_block.move_up()
