@@ -30,6 +30,9 @@ class Block(ABC):
     def rotate(self):
         self.rotation = (self.rotation + 90) % 360
 
+    def rotate_back(self):
+        self.rotation = (self.rotation - 90) % 360
+
     def move_left(self):
         x, y = self.position
         self.position = (x - 1, y)
@@ -38,9 +41,19 @@ class Block(ABC):
         x, y = self.position
         self.position = (x + 1, y)
 
+    def move_up(self):
+        x, y = self.position
+        self.position = (x, y - 1)
+
     def move_down(self):
         x, y = self.position
         self.position = (x, y + 1)
+
+    def is_within_bounds(self, width=10, height=20):
+        for x, y in self.get_cells():
+            if not (0 <= x < width) or not (0 <= y < height):
+                return False
+        return True
 
 
 class BlockI(Block):

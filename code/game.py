@@ -154,9 +154,17 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         self.active_block.rotate()
+                        if not self.active_block.is_within_bounds():
+                            self.active_block.rotate_back()
                     elif event.key == pygame.K_LEFT:
                         self.active_block.move_left()
+                        if not self.active_block.is_within_bounds():
+                            self.active_block.move_right()
                     elif event.key == pygame.K_RIGHT:
                         self.active_block.move_right()
+                        if not self.active_block.is_within_bounds():
+                            self.active_block.move_left()
                     elif event.key == pygame.K_DOWN:
                         self.active_block.move_down()
+                        if not self.active_block.is_within_bounds():
+                            self.active_block.move_up()
