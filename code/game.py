@@ -6,6 +6,7 @@ from code.block import BlockFactory
 from code.board import Board
 from code.constants import COLOR_BLACK, COLOR_YELLOW, COLOR_WHITE
 from code.gamestate import GameState
+from code.popup import Popup
 
 ORIGINAL_BOARD_WIDTH = 768
 ORIGINAL_BOARD_HEIGHT = 1408
@@ -21,12 +22,15 @@ class Game:
         self.app = app
         self.font = pygame.font.Font(None, 36)
         self.start_time = None
+        self.elapsed_time = None
+
+    def update_time(self):
+        self.elapsed_time = int(time.time() - self.start_time)
 
     def format_elapsed_time(self):
-        elapsed = int(time.time() - self.start_time)
-        h = elapsed // 3600
-        m = (elapsed % 3600) // 60
-        s = elapsed % 60
+        h = self.elapsed_time // 3600
+        m = (self.elapsed_time % 3600) // 60
+        s = self.elapsed_time % 60
         return f"{h:02}:{m:02}:{s:02}"
 
     def run(self):
@@ -96,7 +100,9 @@ class Game:
                     self.block_queue.append(BlockFactory.create_random_block())
 
                     if self.board.collides(self.active_block):
-                        print("GAME OVER")
+                        popup = Popup(self.app, time_text=self.format_elapsed_time())
+                        name = popup.run()
+                        print(f"Jogador: {name} | Tempo: {self.format_elapsed_time()}")
                         self.app.change_state(GameState.MENU)
                         break
 
@@ -151,6 +157,7 @@ class Game:
             self.app.screen.blit(next_blocks_text, next_blocks_rect)
             self.app.screen.blit(mini_board_img, mini_board_pos)
 
+            self.update_time()
             time_text = self.font.render(self.format_elapsed_time(), True, COLOR_YELLOW)
             time_rect = time_text.get_rect(
                 midtop=(
