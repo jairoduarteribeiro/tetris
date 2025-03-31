@@ -2,12 +2,23 @@ import time
 
 import pygame
 
+from code.block import (
+    BlockFactory,
+    BlockI,
+    BlockJ,
+    BlockL,
+    BlockO,
+    BlockS,
+    BlockT,
+    BlockZ,
+)
 from code.constants import COLOR_BLACK, COLOR_YELLOW, COLOR_WHITE
 from code.gamestate import GameState
 
 ORIGINAL_BOARD_WIDTH = 768
 ORIGINAL_BOARD_HEIGHT = 1408
 SPACING = 20
+BLOCK_SIZE = 64
 
 MAIN_SCALE = 0.5
 MINI_SCALE = 0.25
@@ -45,10 +56,20 @@ class Game:
         main_board_img = pygame.transform.scale(board_img, (main_width, main_height))
         main_board_pos = (SPACING, SPACING)
 
+        play_area_origin = (
+            main_board_pos[0] + BLOCK_SIZE * MAIN_SCALE,
+            main_board_pos[1] + BLOCK_SIZE * MAIN_SCALE,
+        )
+
         mini_board_img = pygame.transform.scale(board_img, (mini_width, mini_height))
         mini_board_pos = (
             SPACING + main_width + SPACING,
             SPACING + ((main_height - mini_height) // 2),
+        )
+
+        preview_area_origin = (
+            mini_board_pos[0] + BLOCK_SIZE * MINI_SCALE,
+            mini_board_pos[1] + BLOCK_SIZE * MINI_SCALE,
         )
 
         title_img = pygame.image.load("assets/title.png").convert_alpha()
@@ -56,6 +77,10 @@ class Game:
         title_img = pygame.transform.scale(title_img, (mini_width, title_scaled_height))
 
         title_pos = (SPACING + main_width + SPACING, SPACING)
+
+        self.block_queue = [BlockFactory.create_random_block() for _ in range(5)]
+        self.active_block = self.block_queue.pop(0)
+        self.active_block.set_position(4, 9)
 
         running = True
         while running:
@@ -86,6 +111,39 @@ class Game:
 
             self.app.screen.blit(time_text, time_rect)
 
+            for x, y in self.active_block.get_cells():
+                pixel_x = play_area_origin[0] + x * BLOCK_SIZE * MAIN_SCALE
+                pixel_y = play_area_origin[1] + y * BLOCK_SIZE * MAIN_SCALE
+
+                img = self.active_block.get_image()
+                scaled = pygame.transform.scale(
+                    img,
+                    (
+                        int(BLOCK_SIZE * MAIN_SCALE),
+                        int(BLOCK_SIZE * MAIN_SCALE),
+                    ),
+                )
+                self.app.screen.blit(scaled, (pixel_x, pixel_y))
+
+            preview_positions = [(4, 2), (4, 7), (4, 12), (4, 17)]
+
+            for i, block in enumerate(self.block_queue):
+                block.set_position(*preview_positions[i])
+
+                for x, y in block.get_cells():
+                    pixel_x = preview_area_origin[0] + x * BLOCK_SIZE * MINI_SCALE
+                    pixel_y = preview_area_origin[1] + y * BLOCK_SIZE * MINI_SCALE
+
+                    img = block.get_image()
+                    scaled = pygame.transform.scale(
+                        img,
+                        (
+                            int(BLOCK_SIZE * MINI_SCALE),
+                            int(BLOCK_SIZE * MINI_SCALE),
+                        ),
+                    )
+                    self.app.screen.blit(scaled, (pixel_x, pixel_y))
+
             pygame.display.flip()
             self.app.clock.tick(60)
 
@@ -93,3 +151,6 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.app.change_state(GameState.MENU)
                     running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        self.active_block.rotate()
