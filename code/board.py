@@ -9,7 +9,9 @@ class Board:
 
     def is_cell_occupied(self, x, y):
         if x < 0 or x >= self.width or y >= self.height:
-            return True  # Fora dos limites
+            return True
+        if y < 0:
+            return False
         return self.grid[y][x] is not None
 
     def collides(self, block):
