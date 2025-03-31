@@ -35,6 +35,7 @@ class Game:
 
     def run(self):
         self.start_time = time.time()
+        self.last_speedup = self.start_time
 
         main_width = int(ORIGINAL_BOARD_WIDTH * MAIN_SCALE)
         main_height = int(ORIGINAL_BOARD_HEIGHT * MAIN_SCALE)
@@ -86,6 +87,9 @@ class Game:
         running = True
         while running:
             current_time = time.time()
+            if current_time - self.last_speedup >= 60:
+                self.drop_interval = max(0.1, self.drop_interval - 0.1)
+                self.last_speedup = current_time
             if current_time - self.drop_time > self.drop_interval:
                 self.active_block.move_down()
                 if not self.active_block.is_within_bounds() or self.board.collides(
