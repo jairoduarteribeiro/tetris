@@ -154,3 +154,9 @@ class Game:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_UP:
                         self.active_block.rotate()
+                    elif event.key == pygame.K_LEFT:
+                        self.active_block.move_left()
+                    elif event.key == pygame.K_RIGHT:
+                        self.active_block.move_right()
+                    elif event.key == pygame.K_DOWN:
+                        self.active_block.move_down()
