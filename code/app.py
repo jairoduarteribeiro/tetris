@@ -11,7 +11,12 @@ class App:
     def __init__(self):
         init_db()
         pygame.init()
+        pygame.mixer.init()
         pygame.display.set_caption("Tetris")
+
+        pygame.mixer.music.load("assets/tetris.mp3")
+        pygame.mixer.music.play(-1)
+
         self.clock = pygame.time.Clock()
         self.state = GameState.MENU
 
