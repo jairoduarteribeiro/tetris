@@ -26,6 +26,21 @@ class Board:
             if 0 <= y < self.height and 0 <= x < self.width:
                 self.grid[y][x] = image
 
+    def clear_lines(self):
+        lines_cleared = 0
+        new_grid = []
+
+        for row in self.grid:
+            if all(cell is not None for cell in row):
+                lines_cleared += 1
+            else:
+                new_grid.append(row)
+
+        for _ in range(lines_cleared):
+            new_grid.insert(0, [None for _ in range(self.width)])
+
+        self.grid = new_grid
+
     def render(self, surface, origin, cell_size, scale=1.0):
         for y in range(self.height):
             for x in range(self.width):

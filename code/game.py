@@ -89,6 +89,7 @@ class Game:
                 ):
                     self.active_block.move_up()
                     self.board.fix_block(self.active_block)
+                    self.board.clear_lines()
 
                     self.active_block = self.block_queue.pop(0)
                     self.active_block.set_position(4, 0)
