@@ -31,7 +31,8 @@ class App:
             elif self.state == GameState.PLAYING:
                 self.game.run()
             elif self.state == GameState.SCOREBOARD:
-                self.scoreboard.run()
+                # self.scoreboard.run()
+                pass
 
         pygame.quit()
 
