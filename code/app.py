@@ -1,5 +1,6 @@
 import pygame
 
+from code.database import init_db
 from code.game import Game
 from code.gamestate import GameState
 from code.menu import Menu
@@ -8,6 +9,7 @@ from code.scoreboard import Scoreboard
 
 class App:
     def __init__(self):
+        init_db()
         pygame.init()
         pygame.display.set_caption("Tetris")
         self.clock = pygame.time.Clock()

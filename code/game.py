@@ -1,10 +1,10 @@
 import time
-
 import pygame
 
 from code.block import BlockFactory
 from code.board import Board
 from code.constants import COLOR_BLACK, COLOR_YELLOW, COLOR_WHITE
+from code.database import insert
 from code.gamestate import GameState
 from code.popup import Popup
 
@@ -106,7 +106,7 @@ class Game:
                     if self.board.collides(self.active_block):
                         popup = Popup(self.app, time_text=self.format_elapsed_time())
                         name = popup.run()
-                        print(f"Jogador: {name} | Tempo: {self.format_elapsed_time()}")
+                        insert(name, self.elapsed_time)
                         self.app.change_state(GameState.MENU)
                         break
 
